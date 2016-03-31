@@ -1,4 +1,5 @@
 import Nodes.*;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
  * Created by ssdmitriev on 29.03.16.
@@ -21,7 +22,7 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
     }
 
     @Override
-    public Object visitBlockStat(EasyPythonGrammarParser.BlockStatContext ctx) {
+    public BaseStatNode visitBlockStat(EasyPythonGrammarParser.BlockStatContext ctx) {
         BlockStatNode block = new BlockStatNode();
         block.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
         for (EasyPythonGrammarParser.StatContext stat : ctx.stat()) {
@@ -53,7 +54,7 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
     }
 
     @Override
-    public Object visitReturnStat(EasyPythonGrammarParser.ReturnStatContext ctx) {
+    public BaseStatNode visitReturnStat(EasyPythonGrammarParser.ReturnStatContext ctx) {
         ReturnStatNode returnNode = new ReturnStatNode();
         returnNode.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
         if (ctx.expr() != null) {
@@ -63,109 +64,210 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
     }
 
     @Override
-    public Object visitGetField(EasyPythonGrammarParser.GetFieldContext ctx) {
-        return super.visitGetField(ctx);
+    public BaseStatNode visitGetField(EasyPythonGrammarParser.GetFieldContext ctx) {
+        GetFieldNode getFieldNode = new GetFieldNode();
+        getFieldNode.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        getFieldNode.setVariable((ExpressionStatNode) visit(ctx.expr()));
+
+
+        if (ctx.index() != null) {
+            getFieldNode.setIndex((ExpressionStatNode) visit(ctx.index().expr()));
+        } else if (ctx.field() != null) {
+            StringNode str = new StringNode();
+            str.setValue("'" + ctx.field().ID().getText() + "'");
+            getFieldNode.setIndex(str);
+        }
+        return getFieldNode;
     }
 
     @Override
-    public Object visitOr(EasyPythonGrammarParser.OrContext ctx) {
-        return super.visitOr(ctx);
+    public BaseStatNode visitOr(EasyPythonGrammarParser.OrContext ctx) {
+        OrExpressionNode expr = new OrExpressionNode();
+        expr.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        expr.setLeftNode((ExpressionStatNode) visit(ctx.expr(0)));
+        expr.setLeftNode((ExpressionStatNode) visit(ctx.expr(1)));
+        return expr;
     }
 
     @Override
-    public Object visitAddSub(EasyPythonGrammarParser.AddSubContext ctx) {
-        return super.visitAddSub(ctx);
+    public BaseStatNode visitAddSub(EasyPythonGrammarParser.AddSubContext ctx) {
+        BinaryExpressionNode binary;
+        if (ctx.op.getType() == EasyPythonGrammarParser.ADD) {
+            binary = new AddNode();
+        } else {
+            binary = new SubNode();
+        }
+        binary.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        return binary;
     }
 
-    @Override
-    public Object visitParens(EasyPythonGrammarParser.ParensContext ctx) {
-        return super.visitParens(ctx);
-    }
 
     @Override
-    public Object visitVar(EasyPythonGrammarParser.VarContext ctx) {
-        return super.visitVar(ctx);
+    public BaseStatNode visitVar(EasyPythonGrammarParser.VarContext ctx) {
+        AssignmentNode assign = new AssignmentNode();
+        assign.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        VarNode var = new VarNode();
+        var.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        var.setName(ctx.ID().getText());
+        return var;
     }
 
     @Override
     public Object visitConstant(EasyPythonGrammarParser.ConstantContext ctx) {
-        return super.visitConstant(ctx);
+        ConstantNode constant = null;
+        if (ctx.NUM() != null) {
+            constant = new NumberNode();
+            constant.setValue(ctx.NUM().getText());
+        } else if (ctx.STR() != null) {
+            constant = new StringNode();
+            constant.setValue(ctx.STR().getText());
+        } else if (ctx.BOOL() != null) {
+            constant = new BoolNode();
+            constant.setValue(ctx.BOOL().getText());
+        }
+        constant.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        return constant;
     }
 
     @Override
     public Object visitCmp(EasyPythonGrammarParser.CmpContext ctx) {
-        return super.visitCmp(ctx);
+        BinaryExpressionNode binary;
+        if (ctx.op.getType() == EasyPythonGrammarParser.LESS_THAN) {
+            binary = new LtNode();
+        } else if (ctx.op.getType() == EasyPythonGrammarParser.LT_EQ) {
+            binary = new LeNode();
+        } else if (ctx.op.getType() == EasyPythonGrammarParser.GREATER_THAN){
+            binary = new GtNode();
+        } else {
+            binary = new GeNode();
+        }
+        binary.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        binary.setLeftNode((ExpressionStatNode) visit(ctx.expr(0)));
+        binary.setRightNode((ExpressionStatNode) visit(ctx.expr(1)));
+        return binary;
     }
 
     @Override
     public Object visitEq(EasyPythonGrammarParser.EqContext ctx) {
-        return super.visitEq(ctx);
+        BinaryExpressionNode binary;
+        if (ctx.op.getType() == EasyPythonGrammarParser.EQUALS) {
+            binary = new EqNode();
+        } else {
+            binary = new NotEqNode();
+        }
+        binary.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        binary.setLeftNode((ExpressionStatNode) visit(ctx.expr(0)));
+        binary.setRightNode((ExpressionStatNode) visit(ctx.expr(1)));
+        return binary;
     }
 
     @Override
     public Object visitUnaryExpr(EasyPythonGrammarParser.UnaryExprContext ctx) {
-        return super.visitUnaryExpr(ctx);
+        UnaryExpressionNode unary;
+        if (ctx.op.getType() == EasyPythonGrammarParser.NOT) {
+            unary = new NotNode();
+        } else if (ctx.op.getType() == EasyPythonGrammarParser.MINUS) {
+            unary = new NegNode();
+        } else {
+            unary = new PlusNode();
+        }
+        unary.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        unary.setExpression((ExpressionStatNode) visit(ctx.expr()));
+        return unary;
     }
 
     @Override
     public Object visitArray(EasyPythonGrammarParser.ArrayContext ctx) {
-        return super.visitArray(ctx);
+        ListNode array = new ListNode();
+        if (ctx.functionArgs() != null) {
+            for (EasyPythonGrammarParser.ExprContext elem : ctx.functionArgs().expr()) {
+                array.addElement((ExpressionStatNode) visit(elem));
+            }
+        }
+        return array;
     }
 
     @Override
     public Object visitFunction(EasyPythonGrammarParser.FunctionContext ctx) {
-        return super.visitFunction(ctx);
+        FunctionNode function = new FunctionNode();
+        function.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        function.setValue(ctx.getText());
+        if (ctx.functionParams() != null) {
+            for (TerminalNode paramName : ctx.functionParams().ID()) {
+                FunctionParameterNode param = new FunctionParameterNode();
+                param.setName(paramName.getText());
+                function.addParameter(param);
+            }
+        }
+        for (EasyPythonGrammarParser.StatContext statement : ctx.blockStat().stat()) {
+            function.addStatement((BlockStatNode) visit(statement));
+        }
+        return function;
     }
 
     @Override
     public Object visitMulDivMod(EasyPythonGrammarParser.MulDivModContext ctx) {
-        return super.visitMulDivMod(ctx);
+        BinaryExpressionNode binary;
+        if (ctx.op.getType() == EasyPythonGrammarParser.STAR) {
+            binary = new MulNode();
+        } else if (ctx.op.getType() == EasyPythonGrammarParser.DIV) {
+            binary = new DivNode();
+        } else {
+            binary = new ModNode();
+        }
+        binary.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        binary.setLeftNode((ExpressionStatNode) visit(ctx.expr(0)));
+        binary.setRightNode((ExpressionStatNode) visit(ctx.expr(1)));
+        return binary;
     }
 
     @Override
-    public Object visitAnd(EasyPythonGrammarParser.AndContext ctx) {
-        return super.visitAnd(ctx);
+    public BaseStatNode visitAnd(EasyPythonGrammarParser.AndContext ctx) {
+        AndExpressionNode expr = new AndExpressionNode();
+        expr.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        expr.setLeftNode((ExpressionStatNode) visit(ctx.expr(0)));
+        expr.setLeftNode((ExpressionStatNode) visit(ctx.expr(1)));
+        return expr;
     }
 
     @Override
     public Object visitAssign(EasyPythonGrammarParser.AssignContext ctx) {
-        return super.visitAssign(ctx);
+        AssignmentNode assignment = new AssignmentNode();
+        assignment.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        VarNode var = new VarNode();
+        var.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        var.setName(ctx.ID().getText());
+        assignment.setVariable(var);
+        assignment.setExpression((ExpressionStatNode) visit(ctx.expr()));
+        return assignment;
     }
 
     @Override
-    public Object visitFunctionCall(EasyPythonGrammarParser.FunctionCallContext ctx) {
-        return super.visitFunctionCall(ctx);
+    public BaseStatNode visitFunctionCall(EasyPythonGrammarParser.FunctionCallContext ctx) {
+        FunctionCallNode functionCall = new FunctionCallNode();
+        functionCall.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        functionCall.setFunction((ExpressionStatNode) visit(ctx.expr()));
+        if (ctx.functionArgs() != null) {
+            for (EasyPythonGrammarParser.ExprContext arg : ctx.functionArgs().expr()) {
+                functionCall.addArgument((ExpressionStatNode) visit(arg));
+            }
+        }
+        return functionCall;
     }
 
     @Override
     public Object visitPutField(EasyPythonGrammarParser.PutFieldContext ctx) {
-        return super.visitPutField(ctx);
+        PutFieldNode putIndex = new PutFieldNode();
+        putIndex.setVariable((ExpressionStatNode) visit(ctx.expr(0)));
+        if (ctx.index() != null) {
+            putIndex.setIndex((ExpressionStatNode) visit(ctx.index().expr()));
+        } else if (ctx.field() != null) {
+            StringNode str = new StringNode();
+            str.setValue("'" + ctx.field().ID().getText() + "'");
+            putIndex.setIndex(str);
+        }
+        putIndex.setExpr((ExpressionStatNode) visit(ctx.expr(1)));
+        return putIndex;
     }
 
-    @Override
-    public BaseStatNode visitExpr(EasyPythonGrammarParser.ExprContext ctx) {
-        ExpressionStatNode expressionNode = new ExpressionStatNode();
-        expressionNode.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
-        return expressionNode;
-    }
-
-    @Override
-    public Object visitFunctionArgs(EasyPythonGrammarParser.FunctionArgsContext ctx) {
-        return super.visitFunctionArgs(ctx);
-    }
-
-    @Override
-    public Object visitFunctionParams(EasyPythonGrammarParser.FunctionParamsContext ctx) {
-        return super.visitFunctionParams(ctx);
-    }
-
-    @Override
-    public Object visitIndex(EasyPythonGrammarParser.IndexContext ctx) {
-        return super.visitIndex(ctx);
-    }
-
-    @Override
-    public Object visitField(EasyPythonGrammarParser.FieldContext ctx) {
-        return super.visitField(ctx);
-    }
 }
