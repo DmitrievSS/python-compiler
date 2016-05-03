@@ -155,7 +155,7 @@ public class EasyPythonGrammarLexer extends Lexer {
 	  // following rules into account:
 	  //
 	  // "Tabs are replaced (from left to right) by one to eight spaces
-	  //  such that the total number of characters up to and including
+	  //  such that the total numberValue of characters up to and including
 	  //  the replacement is a multiple of eight [...]"
 	  //
 	  //  -- https://docs.python.org/3.1/reference/lexical_analysis.html#indentation
