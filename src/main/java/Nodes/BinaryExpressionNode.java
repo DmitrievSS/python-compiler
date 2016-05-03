@@ -1,4 +1,4 @@
-package Nodes;
+package nodes;
 
 /**
  * Created by ssdmitriev on 30.03.16.

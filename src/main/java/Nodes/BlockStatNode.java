@@ -1,4 +1,6 @@
-package Nodes;
+package nodes;
+
+import visitors.AstVisitor;
 
 import java.util.ArrayList;
 
@@ -20,4 +22,7 @@ public class BlockStatNode extends BaseStatNode {
         body.add(statement);
     }
 
+    public <T> T accept(AstVisitor<T> v) {
+        return v.visit(this);
+    }
 }

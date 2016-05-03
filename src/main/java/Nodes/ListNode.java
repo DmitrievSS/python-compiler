@@ -1,4 +1,6 @@
-package Nodes;
+package nodes;
+
+import visitors.AstVisitor;
 
 import java.util.ArrayList;
 
@@ -19,5 +21,9 @@ public class ListNode extends ExpressionStatNode{
 
     public void addElement(ExpressionStatNode element) {
         elements.add(element);
+    }
+
+    public <T> T accept(AstVisitor<T> v) {
+        return v.visit(this);
     }
 }

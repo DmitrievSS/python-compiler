@@ -1,18 +1,27 @@
-import Nodes.*;
+package visitors;
+
+import antlr_dir.EasyPythonGrammarBaseVisitor;
+import antlr_dir.EasyPythonGrammarParser;
+import nodes.*;
 import org.antlr.v4.runtime.tree.TerminalNode;
+
+import java.util.Stack;
 
 /**
  * Created by ssdmitriev on 29.03.16.
  */
 public class AstBuilder extends EasyPythonGrammarBaseVisitor {
+    private Stack<FunctionNode> scopes;
 
     @Override
     public BaseStatNode visitProgram(EasyPythonGrammarParser.ProgramContext ctx) {
-        BlockStatNode block = new BlockStatNode();
+        FunctionNode block = new FunctionNode();
+        scopes.push(block);
         block.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
         for (EasyPythonGrammarParser.StatContext stat : ctx.stat()) {
-            block.addStatement((StatStatNode) visit(stat));
+            block.addStatement((BlockStatNode) visit(stat));
         }
+        scopes.pop();
         return block;
     }
 
@@ -136,7 +145,7 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
             binary = new LtNode();
         } else if (ctx.op.getType() == EasyPythonGrammarParser.LT_EQ) {
             binary = new LeNode();
-        } else if (ctx.op.getType() == EasyPythonGrammarParser.GREATER_THAN){
+        } else if (ctx.op.getType() == EasyPythonGrammarParser.GREATER_THAN) {
             binary = new GtNode();
         } else {
             binary = new GeNode();
@@ -190,6 +199,7 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
     @Override
     public Object visitFunction(EasyPythonGrammarParser.FunctionContext ctx) {
         FunctionNode function = new FunctionNode();
+        scopes.push(function);
         function.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
         function.setValue(ctx.getText());
         if (ctx.functionParams() != null) {
@@ -202,6 +212,7 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
         for (EasyPythonGrammarParser.StatContext statement : ctx.blockStat().stat()) {
             function.addStatement((BlockStatNode) visit(statement));
         }
+        scopes.pop();
         return function;
     }
 
@@ -239,6 +250,14 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
         var.setName(ctx.ID().getText());
         assignment.setVariable(var);
         assignment.setExpression((ExpressionStatNode) visit(ctx.expr()));
+        scopes.peek().addVariable(var.getName());
+        if (ctx.expr() != null) {
+            assignment.setExpression((ExpressionStatNode) visit(ctx.expr()));
+        } else {
+            assignment.setExpression(var);
+        }
+        ExpressionStatNode exprStat = new ExpressionStatNode();
+        exprStat.setExpr(assignment);
         return assignment;
     }
 

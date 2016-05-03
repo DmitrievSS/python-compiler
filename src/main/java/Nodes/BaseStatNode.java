@@ -1,4 +1,6 @@
-package Nodes;
+package nodes;
+
+import visitors.AstVisitor;
 
 /**
  * Created by ssdmitriev on 29.03.16.
@@ -36,5 +38,5 @@ public abstract class BaseStatNode {
         return position;
     }
 
-//    public abstract <T> T accept(AstVisitor<T> v);
+
 }

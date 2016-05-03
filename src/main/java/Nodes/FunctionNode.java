@@ -1,4 +1,6 @@
-package Nodes;
+package nodes;
+
+import visitors.AstVisitor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -45,5 +47,9 @@ public class FunctionNode extends ConstantNode{
     // debug
     public HashSet<String> getVariables() {
         return variables;
+    }
+
+    public <T> T accept(AstVisitor<T> v) {
+        return v.visit(this);
     }
 }

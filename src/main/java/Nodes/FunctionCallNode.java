@@ -1,4 +1,6 @@
-package Nodes;
+package nodes;
+
+import visitors.AstVisitor;
 
 import java.util.ArrayList;
 
@@ -28,5 +30,9 @@ public class FunctionCallNode extends ExpressionStatNode{
 
     public void addArgument(ExpressionStatNode argument) {
         arguments.add(argument);
+    }
+
+    public <T> T accept(AstVisitor<T> v) {
+        return v.visit(this);
     }
 }

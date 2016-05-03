@@ -1,4 +1,4 @@
-// Generated from EasyPythonGrammar.g4 by ANTLR 4.5.2
+package antlr_dir;// Generated from EasyPythonGrammar.g4 by ANTLR 4.5.2
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**

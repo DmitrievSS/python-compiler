@@ -1,4 +1,6 @@
-package Nodes;
+package nodes;
+
+import visitors.AstVisitor;
 
 import java.util.Optional;
 
@@ -24,5 +26,9 @@ public class IfElseStatNode extends WithConditionStatNode {
 
     public void setElseStat(StatStatNode elseStat) {
         this.elseStat = Optional.of(elseStat);
+    }
+
+    public <T> T accept(AstVisitor<T> v) {
+        return v.visit(this);
     }
 }
