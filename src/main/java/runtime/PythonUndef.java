@@ -1,22 +1,12 @@
 package runtime;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Created by ssdmitriev on 03.05.16.
+ * Created by ssdmitriev on 04.05.16.
  */
-public class PythonList extends PythonObject {
-    private Map<String, PythonObject> array;
-    private int length;
-
-    public PythonList(PythonObject... objects) {
+public class PythonUndef extends PythonObject {
+    public PythonUndef() {
         super(PythonType.OBJECT);
-        array = new HashMap<>();
-        length = objects.length;
-        for (int i = 0; i < objects.length; i++) {
-            array.put(i + "", objects[i]);
-        }
+        this.stringValue = "undefined";
     }
 
     @Override
@@ -98,30 +88,4 @@ public class PythonList extends PythonObject {
     public PythonObject less() {
         return null;
     }
-
-    @Override
-    public PythonObject append(PythonObject object) throws Exception {
-        array.put(length + "", object);
-        length++;
-        return this;
-    }
-
-    public PythonObject append(PythonString string, PythonObject object){
-        array.put(string.getStringValue(), object);
-        length++;
-        return this;
-    }
-
-    @Override
-    public PythonObject remove(int index) throws Exception {
-        array.remove(index + "");
-        length--;
-        return this;
-    }
-
-    @Override
-    public PythonObject get(int index) throws Exception {
-        return array.get(index+"");
-    }
-
 }

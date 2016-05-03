@@ -17,6 +17,7 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
     private static final String RUNTIME_PACKAGE = "runtime/";
     private class Class {
         public static final String OBJECT = RUNTIME_PACKAGE + "PythonObject";
+        public static final String UNDEF = RUNTIME_PACKAGE + "PythonObject";
         public static final String BOOL = RUNTIME_PACKAGE + "PythonBoolean";
         public static final String LIST = RUNTIME_PACKAGE + "PythonList";
         public static final String NUMBER = RUNTIME_PACKAGE + "PythonNumber";
@@ -31,6 +32,7 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
         public static final String STRING = "L" + Class.STRING + ';';
         public static final String NUMBER = "L" + Class.NUMBER + ';';
         public static final String FUNCTION = "L" + Class.FUNCTION + ';';
+        public static final String UNDEF = "L" + Class.UNDEF+ ';';
         public static final String LIST = "L" + Class.LIST + ";";
     }
 
@@ -232,7 +234,7 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
             for (BlockStatNode stat : this.getFunction().getBody()) {
                 stat.accept(CodeGenerator.this);
             }
-            visitFieldInsn(GETSTATIC, Class.UNDEF, "UNDEF", Type.UNDEF);
+//            visitFieldInsn(GETSTATIC, Class.UNDEF, "UNDEF", Type.UNDEF);
             visitInsn(ARETURN);
             mv.visitMaxs(maxStack, 2);
             mv.visitEnd();
@@ -270,11 +272,11 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
                 mainScope = false;
 
                 mv.visitVarInsn(ALOAD, 0);
-                mv.visitFieldInsn(GETSTATIC, Class.STANDARD_LIBRARY, "CONSOLE", Type.ARRAY);
+                mv.visitFieldInsn(GETSTATIC, Class.STANDARD_LIBRARY, "CONSOLE", Type.LIST);
                 mv.visitFieldInsn(PUTFIELD, scopeClass(number), CONSOLE_LIBRARY, Type.OBJECT);
 
                 mv.visitVarInsn(ALOAD, 0);
-                mv.visitFieldInsn(GETSTATIC, Class.STANDARD_LIBRARY, "MATH", Type.ARRAY);
+                mv.visitFieldInsn(GETSTATIC, Class.STANDARD_LIBRARY, "MATH", Type.LIST);
                 mv.visitFieldInsn(PUTFIELD, scopeClass(number), MATH_LIBRARY, Type.OBJECT);
             }
 
@@ -328,6 +330,11 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(AddNode add) {
+        add.getLeftNode().accept(this);
+        add.getRightNode().accept(this);
+        writers.peek().visitMethodInsn(
+                INVOKEVIRTUAL, Class.OBJECT, "add", BINARY_SIGNATURE);
+        writers.peek().stackPop(1);
         return null;
     }
 

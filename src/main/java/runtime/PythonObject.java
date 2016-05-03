@@ -5,10 +5,11 @@ package runtime;
  */
 public abstract class PythonObject {
     private PythonType type;
+
     protected String stringValue;
+
     protected double numberValue;
     protected boolean boolValue;
-
     public PythonObject(PythonType type) {
         this.type = type;
     }
@@ -32,6 +33,7 @@ public abstract class PythonObject {
     public abstract PythonObject not();
 
     public abstract PythonObject mul();
+
     public abstract PythonObject mod();
     public abstract PythonObject div();
     public abstract PythonObject eq();
@@ -45,12 +47,23 @@ public abstract class PythonObject {
     public PythonObject append(PythonObject object) throws Exception {
         return this;
     }
-
     public PythonObject remove(int index) throws Exception {
         return this;
     }
 
     public PythonObject get(int index) throws Exception {
         return this;
+    }
+
+    public String getStringValue() {
+        return stringValue;
+    }
+
+    public double getNumberValue() {
+        return numberValue;
+    }
+
+    public boolean isBoolValue() {
+        return boolValue;
     }
 }
