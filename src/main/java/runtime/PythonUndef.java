@@ -4,6 +4,8 @@ package runtime;
  * Created by ssdmitriev on 04.05.16.
  */
 public class PythonUndef extends PythonObject {
+    public static final PythonUndef UNDEF = new PythonUndef();
+
     public PythonUndef() {
         super(PythonType.OBJECT);
         this.stringValue = "undefined";
