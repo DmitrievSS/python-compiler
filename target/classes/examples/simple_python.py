@@ -1,1 +1,1 @@
-x = 1
+Console.print(1, 2)

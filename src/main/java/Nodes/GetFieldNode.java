@@ -5,7 +5,7 @@ import visitors.AstVisitor;
 /**
  * Created by ssdmitriev on 31.03.16.
  */
-public class GetFieldNode extends BaseStatNode {
+public class GetFieldNode extends ExpressionStatNode {
     private ExpressionStatNode variable;
     private ExpressionStatNode index;
 

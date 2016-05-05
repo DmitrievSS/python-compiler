@@ -19,7 +19,14 @@ public abstract class PythonObject {
     }
 
     public int toInt() {
-        return this.toPythonBool().toInt();
+        throw new RuntimeException("Class error");
+    }
+
+    public PythonObject call(PythonObject... objects) {
+        System.err.println("RUNTIME ERROR: object '" +
+                this.toPythonString().getStringValue() + "' is not callable.");
+        System.exit(1);
+        return null;
     }
 
     public abstract PythonObject toPythonBool();
@@ -47,16 +54,16 @@ public abstract class PythonObject {
     public PythonObject append(PythonObject object) throws Exception {
         return this;
     }
-    public PythonObject remove(int index) throws Exception {
+    public PythonObject remove(PythonObject  index) throws Exception {
         return this;
     }
 
-    public PythonObject get(int index) throws Exception {
+    public PythonObject get(PythonObject index) throws Exception {
         return this;
     }
 
     public String getStringValue() {
-        return stringValue;
+        return stringValue.replaceAll("\'", "");
     }
 
     public double getNumberValue() {

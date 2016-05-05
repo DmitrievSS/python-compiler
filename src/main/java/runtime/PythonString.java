@@ -86,5 +86,9 @@ public class PythonString extends PythonObject{
         return null;
     }
 
+    @Override
+    public String toString() {
+        return stringValue;
+    }
 
 }

@@ -85,6 +85,11 @@ public class PythonFunction extends PythonObject {
     }
 
     @Override
+    public String toString() {
+        return stringValue;
+    }
+
+    @Override
     public PythonObject less(PythonObject x) {
         return null;
     }

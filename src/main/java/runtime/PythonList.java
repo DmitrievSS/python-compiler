@@ -114,15 +114,15 @@ public class PythonList extends PythonObject {
     }
 
     @Override
-    public PythonObject remove(int index) throws Exception {
+    public PythonObject remove(PythonObject index) throws Exception {
         array.remove(index + "");
         length--;
         return this;
     }
 
     @Override
-    public PythonObject get(int index) throws Exception {
-        return array.get(index+"");
+    public PythonObject get(PythonObject index) throws Exception {
+        return array.get(index.getStringValue()+"");
     }
 
 }

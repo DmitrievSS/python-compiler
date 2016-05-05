@@ -17,7 +17,7 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
     private static final String RUNTIME_PACKAGE = "runtime/";
     private class Class {
         public static final String OBJECT = RUNTIME_PACKAGE + "PythonObject";
-        public static final String UNDEF = RUNTIME_PACKAGE + "PythonObject";
+        public static final String UNDEF = RUNTIME_PACKAGE + "PythonUndef";
         public static final String BOOL = RUNTIME_PACKAGE + "PythonBoolean";
         public static final String LIST = RUNTIME_PACKAGE + "PythonList";
         public static final String NUMBER = RUNTIME_PACKAGE + "PythonNumber";
@@ -469,6 +469,10 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(GetFieldNode getIndex) {
+        getIndex.getVariable().accept(this);
+        getIndex.getIndex().accept(this);
+        writers.peek().visitMethodInsn(INVOKEVIRTUAL, Class.OBJECT, "get", BINARY_SIGNATURE);
+        writers.peek().stackPop(1);
         return null;
     }
 

@@ -5,7 +5,7 @@ import java.util.Scanner;
 /**
  * Created by ssdmitriev on 04.05.16.
  */
-public class StandartLibrary {
+public class StandardLibrary {
     public static final PythonList CONSOLE;
     private static final String FUNCTION_TEXT = "[native code]";
     private static final PythonFunction CONSOLE_PRINT = new PythonFunction(FUNCTION_TEXT) {
