@@ -19,7 +19,7 @@ public abstract class PythonObject {
     }
 
     public int toInt() {
-        throw new RuntimeException("Class error");
+        return 1;
     }
 
     public PythonObject call(PythonObject... objects) {

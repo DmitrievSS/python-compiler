@@ -208,7 +208,7 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
             }
         }
         for (EasyPythonGrammarParser.StatContext statement : ctx.blockStat().stat()) {
-            function.addStatement((BlockStatNode) visit(statement));
+            function.addStatement((BaseStatNode) visit(statement));
         }
         scopes.pop();
         return function;
