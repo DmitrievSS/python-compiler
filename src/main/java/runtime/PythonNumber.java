@@ -29,7 +29,7 @@ public class PythonNumber extends PythonObject {
     }
 
     public PythonObject toPythonNumber() {
-        return new PythonNumber(boolValue);
+        return this;
     }
 
     public PythonObject toPythonString() {

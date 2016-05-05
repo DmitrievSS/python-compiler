@@ -12,6 +12,11 @@ public class PythonUndef extends PythonObject {
     }
 
     @Override
+    public int toInt() {
+        throw new RuntimeException("Class error");
+    }
+
+    @Override
     public PythonObject toPythonBool() {
         return null;
     }

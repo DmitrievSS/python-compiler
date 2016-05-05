@@ -110,6 +110,8 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
             binary = new SubNode();
         }
         binary.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        binary.setLeftNode((ExpressionStatNode) visit(ctx.expr(0)));
+        binary.setRightNode((ExpressionStatNode) visit(ctx.expr(1)));
         return binary;
     }
 

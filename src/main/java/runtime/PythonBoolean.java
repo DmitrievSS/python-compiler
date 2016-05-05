@@ -13,6 +13,10 @@ public class PythonBoolean extends PythonObject {
     }
 
 
+    @Override
+    public int toInt() {
+        return this.boolValue ? 1 : 0;
+    }
 
     public PythonObject toPythonBool() {
         return this;

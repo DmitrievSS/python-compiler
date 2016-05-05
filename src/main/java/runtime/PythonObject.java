@@ -18,9 +18,7 @@ public abstract class PythonObject {
         return numberValue != 0;
     }
 
-    public int toInt() {
-        return 1;
-    }
+    public abstract int toInt();
 
     public PythonObject call(PythonObject... objects) {
         System.err.println("RUNTIME ERROR: object '" +

@@ -9,6 +9,11 @@ public class PythonString extends PythonObject{
         this.stringValue = stringValue;
     }
 
+    @Override
+    public int toInt() {
+        return new Double(this.toPythonNumber().getNumberValue()).intValue();
+    }
+
     public PythonObject toPythonBool() {
         return new PythonBoolean(!stringValue.isEmpty());
     }

@@ -1,3 +1,4 @@
 x=0
-while x==0:
-    x = 1
+y=0
+while x==y:
+    x = x + 1
