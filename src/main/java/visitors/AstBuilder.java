@@ -35,7 +35,10 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
         BlockStatNode block = new BlockStatNode();
         block.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
         for (EasyPythonGrammarParser.StatContext stat : ctx.stat()) {
-            block.addStatement((BaseStatNode) visit(stat));
+            BaseStatNode statement = (BaseStatNode) visit(stat);
+            if (!((statement instanceof BlockStatNode) && ((BlockStatNode) statement).getBody().isEmpty())) {
+                block.addStatement(statement);
+            }
         }
         return block;
     }

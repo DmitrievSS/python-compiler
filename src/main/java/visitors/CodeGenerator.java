@@ -398,6 +398,8 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(BoolNode bool) {
+        writers.peek().visitFieldInsn(GETSTATIC, Class.BOOL,
+                bool.getValue().toUpperCase(), Type.BOOL);
         return null;
     }
 
@@ -532,11 +534,20 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(NotEqNode ne) {
+        ne.getLeftNode().accept(this);
+        ne.getRightNode().accept(this);
+        writers.peek().visitMethodInsn(
+                INVOKEVIRTUAL, Class.OBJECT, "ne", BINARY_SIGNATURE);
+        writers.peek().stackPop(1);
         return null;
     }
 
     @Override
     public Object visit(NotNode not) {
+        not.getExpression().accept(this);
+        writers.peek().visitMethodInsn(
+                INVOKEVIRTUAL, Class.OBJECT, "not", UNARY_SIGNATURE);
+        writers.peek().stackPop(0);
         return null;
     }
 
@@ -577,6 +588,10 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(PlusNode plus) {
+        plus.getExpression().accept(this);
+        writers.peek().visitMethodInsn(
+                INVOKEVIRTUAL, Class.OBJECT, "plus", UNARY_SIGNATURE);
+        writers.peek().stackPop(0);
         return null;
     }
 
@@ -622,11 +637,24 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(PutFieldNode putIndex) {
+        FunctionWriter w = writers.peek();
+        putIndex.getVariable().accept(this);
+        putIndex.getIndex().accept(this);
+        putIndex.getExpr().accept(this);
+        w.visitMethodInsn(INVOKEVIRTUAL, Class.OBJECT, "put", PUT_SIGNATURE);
+        w.stackPop(2);
         return null;
     }
 
     @Override
     public Object visit(ReturnStatNode returnStat) {
+        if (returnStat.getValue() != null) {
+            returnStat.getValue().accept(this);
+        } else {
+            writers.peek().visitFieldInsn(
+                    GETSTATIC, Class.UNDEF, "UNDEF", Type.UNDEF);
+        }
+        writers.peek().visitInsn(ARETURN);
         return null;
     }
 
@@ -648,6 +676,11 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(SubNode sub) {
+        sub.getLeftNode().accept(this);
+        sub.getRightNode().accept(this);
+        writers.peek().visitMethodInsn(
+                INVOKEVIRTUAL, Class.OBJECT, "sub", BINARY_SIGNATURE);
+        writers.peek().stackPop(1);
         return null;
     }
 
