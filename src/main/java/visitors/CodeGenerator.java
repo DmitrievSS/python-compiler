@@ -234,7 +234,7 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
             for (BaseStatNode stat : this.getFunction().getBody()) {
                 stat.accept(CodeGenerator.this);
             }
-//            visitFieldInsn(GETSTATIC, Class.UNDEF, "UNDEF", Type.UNDEF);
+            visitFieldInsn(GETSTATIC, Class.UNDEF, "UNDEF", Type.UNDEF);
             visitInsn(ARETURN);
             mv.visitMaxs(maxStack, 2);
             mv.visitEnd();
@@ -706,6 +706,7 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
         writers.peek().stackPop(0);
         writers.peek().visitJumpInsn(IFEQ, loopEnd); // if x == false
         whileStat.getStat().accept(this);
+        writers.peek().visitInsn(POP);
         writers.peek().visitJumpInsn(GOTO, loopStart);
         writers.peek().visitLabel(loopEnd);
         return null;

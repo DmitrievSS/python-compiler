@@ -1,7 +1,3 @@
-def h() :
-   return 1
-
-h()g
-
-
-
+x=0
+while x==0:
+    x = 1
