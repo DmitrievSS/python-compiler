@@ -9,7 +9,8 @@ public class Main {
 //            System.exit(1);
 //        }
         Compiler compiler = new Compiler();
-        compiler.setInputFileName(args[0]);
+//        compiler.setInputFileName(args[0]);
+        compiler.setInputFileName(name);
         String target = args.length > 1 ? args[1] : "Out";
         compiler.setOutputFileName(target);
         compiler.run();

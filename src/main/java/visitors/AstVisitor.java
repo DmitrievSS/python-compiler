@@ -77,5 +77,7 @@ public interface AstVisitor<T> {
     T visit(WhileStatNode whileStat);
 
     T visit(WithConditionStatNode doWhile);
+
+    T visit(BaseStatNode doWhile);
 }
 

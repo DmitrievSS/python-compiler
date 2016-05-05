@@ -9,23 +9,23 @@ import java.util.Optional;
  */
 public class IfElseStatNode extends WithConditionStatNode {
 
-    private StatStatNode ifStat;
-    private Optional<StatStatNode> elseStat;
+    private BaseStatNode ifBranch;
+    private BaseStatNode elseBranch;
 
-    public StatStatNode getIfStat() {
-        return ifStat;
+    public BaseStatNode getIfBranch() {
+        return ifBranch;
     }
 
-    public void setIfStat(StatStatNode stat) {
-        this.ifStat = stat;
+    public void setIfBranch(BaseStatNode stat) {
+        this.ifBranch = stat;
     }
 
-    public Optional<StatStatNode> getElseStat() {
-        return elseStat;
+    public BaseStatNode getElseBranch() {
+        return elseBranch;
     }
 
-    public void setElseStat(StatStatNode elseStat) {
-        this.elseStat = Optional.of(elseStat);
+    public void setElseBranch(BaseStatNode elseBranch) {
+        this.elseBranch = elseBranch;
     }
 
     public <T> T accept(AstVisitor<T> v) {

@@ -6,13 +6,13 @@ import visitors.AstVisitor;
  * Created by ssdmitriev on 29.03.16.
  */
 public class WhileStatNode extends WithConditionStatNode {
-    private StatStatNode stat;
+    private BaseStatNode stat;
 
-    public StatStatNode getStat() {
+    public BaseStatNode getStat() {
         return stat;
     }
 
-    public void setStat(StatStatNode stat) {
+    public void setStat(BaseStatNode stat) {
         this.stat = stat;
     }
 

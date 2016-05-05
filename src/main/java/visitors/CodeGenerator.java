@@ -231,7 +231,7 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
                 visitLabel(catchEnd);
             }
 
-            for (BlockStatNode stat : this.getFunction().getBody()) {
+            for (BaseStatNode stat : this.getFunction().getBody()) {
                 stat.accept(CodeGenerator.this);
             }
 //            visitFieldInsn(GETSTATIC, Class.UNDEF, "UNDEF", Type.UNDEF);
@@ -340,21 +340,59 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(AndExpressionNode and) {
+        and.getLeftNode().accept(this);
+        and.getRightNode().accept(this);
+        writers.peek().visitMethodInsn(
+                INVOKEVIRTUAL, Class.OBJECT, "and", BINARY_SIGNATURE);
+        writers.peek().stackPop(1);
         return null;
     }
 
     @Override
-    public Object visit(ListNode array) {
+    public Object visit(ListNode list) {
+        writers.peek().visitTypeInsn(NEW, Class.LIST);
+        writers.peek().visitInsn(DUP);
+        writers.peek().visitLdcInsn(list.getElements().size());
+        writers.peek().visitTypeInsn(ANEWARRAY, Class.OBJECT);
+        int i = 0;
+        for (ExpressionStatNode elem : list.getElements()) {
+            writers.peek().visitInsn(DUP);
+            writers.peek().visitLdcInsn(i);
+            ++i;
+            elem.accept(this);
+            writers.peek().visitInsn(AASTORE);
+        }
+        writers.peek().visitMethodInsn(
+                INVOKESPECIAL, Class.LIST, "<init>", ARRAY_SIGNATURE);
+        writers.peek().stackPop(list.getElements().size() + 1);
         return null;
     }
 
     @Override
     public Object visit(AssignmentNode assign) {
+        int number = findScopeNumber(assign.getVariable());
+        FunctionWriter w = writers.peek();
+
+        w.visitVarInsn(ALOAD, 0);
+        w.visitFieldInsn(GETFIELD, functionClass(w.getNumber()),
+                scopeName(number), scopeType(number));
+        assign.getExpression().accept(this);
+        w.visitFieldInsn(PUTFIELD, scopeClass(number),
+                assign.getVariable().getName(), Type.OBJECT);
+
+        w.visitVarInsn(ALOAD, 0);
+        w.visitFieldInsn(GETFIELD, functionClass(w.getNumber()),
+                scopeName(number), scopeType(number));
+        w.visitFieldInsn(GETFIELD, scopeClass(number),
+                assign.getVariable().getName(), Type.OBJECT);
         return null;
     }
 
     @Override
     public Object visit(BlockStatNode block) {
+        for (BaseStatNode stat: block.getBody()) {
+            stat.accept(this);
+        }
         return null;
     }
 
@@ -370,21 +408,57 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(EqNode eq) {
+        eq.getLeftNode().accept(this);
+        eq.getRightNode().accept(this);
+        writers.peek().visitMethodInsn(
+                INVOKEVIRTUAL, Class.OBJECT, "eq", BINARY_SIGNATURE);
+        writers.peek().stackPop(1);
         return null;
     }
 
     @Override
     public Object visit(ExpressionStatNode exprStat) {
+        exprStat.getExpr().accept(this);
+        writers.peek().visitInsn(POP);
         return null;
     }
 
     @Override
     public Object visit(FunctionCallNode functionCall) {
+        functionCall.getFunction().accept(this);
+        writers.peek().visitLdcInsn(functionCall.getArguments().size());
+        writers.peek().visitTypeInsn(ANEWARRAY, Class.OBJECT);
+        int i = 0;
+        for (ExpressionStatNode arg : functionCall.getArguments()) {
+            writers.peek().visitInsn(DUP);
+            writers.peek().visitLdcInsn(i);
+            ++i;
+            arg.accept(this);
+            writers.peek().visitInsn(AASTORE);
+        }
+        writers.peek().visitMethodInsn(
+                INVOKEVIRTUAL, Class.OBJECT, "call", CALL_SIGNATURE);
+        writers.peek().stackPop(functionCall.getArguments().size());
         return null;
     }
 
     @Override
     public Object visit(FunctionNode function) {
+        FunctionWriter fw = new FunctionWriter(function);
+        writers.push(fw);
+        writers.peek().handleFunction();
+        writers.pop();
+        FunctionWriter w = writers.peek();
+        w.visitTypeInsn(NEW, functionClass(fw.getNumber()));
+        w.visitInsn(DUP);
+        for (FunctionWriter writer : writers) {
+            w.visitVarInsn(ALOAD, 0);
+            w.visitFieldInsn(GETFIELD, functionClass(w.getNumber()),
+                    scopeName(writer.getNumber()), scopeType(writer.getNumber()));
+        }
+        w.visitMethodInsn(INVOKESPECIAL,
+                functionClass(fw.getNumber()), "<init>", fw.getSignature());
+        writers.peek().stackPop(writers.size() + 1);
         return null;
     }
 
@@ -410,6 +484,20 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(IfElseStatNode ifElse) {
+        Label elseBlock = new Label();
+        Label end = new Label();
+        ifElse.getCondition().accept(this);
+        writers.peek().visitMethodInsn(
+                INVOKEVIRTUAL, Class.OBJECT, "toInt", "()I"); // 0(false) or 1(true)
+        writers.peek().stackPop(0);
+        writers.peek().visitJumpInsn(IFEQ, elseBlock); // if x == 0
+        ifElse.getIfBranch().accept(this);
+        writers.peek().visitJumpInsn(GOTO, end);
+        writers.peek().visitLabel(elseBlock);
+        if (ifElse.getElseBranch() != null) {
+            ifElse.getElseBranch().accept(this);
+        }
+        writers.peek().visitLabel(end);
         return null;
     }
 
@@ -450,11 +538,36 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(NumberNode number) {
+        if (number.getValue().equals("NaN")) {
+            writers.peek().visitFieldInsn(
+                    GETSTATIC, Class.NUMBER, "NAN", Type.NUMBER);
+        } else if (number.getValue().equals("0.0")) {
+            writers.peek().visitFieldInsn(
+                    GETSTATIC, Class.NUMBER, "ZERO", Type.NUMBER);
+        } else if (number.getValue().equals("1.0")) {
+            writers.peek().visitFieldInsn(
+                    GETSTATIC, Class.NUMBER, "ONE", Type.NUMBER);
+        } else if (number.getValue().equals("Infinity")) {
+            writers.peek().visitFieldInsn(
+                    GETSTATIC, Class.NUMBER, "POS_INFINITY", Type.NUMBER);
+        } else {
+            writers.peek().visitTypeInsn(NEW, Class.NUMBER);
+            writers.peek().visitInsn(DUP);
+            writers.peek().visitLdcInsn(Double.parseDouble(number.getValue()));
+            writers.peek().visitMethodInsn(INVOKESPECIAL,
+                    Class.NUMBER, "<init>", "(D)V");
+            writers.peek().stackPop(3);
+        }
         return null;
     }
 
     @Override
     public Object visit(OrExpressionNode or) {
+        or.getLeftNode().accept(this);
+        or.getRightNode().accept(this);
+        writers.peek().visitMethodInsn(
+                INVOKEVIRTUAL, Class.OBJECT, "or", BINARY_SIGNATURE);
+        writers.peek().stackPop(1);
         return null;
     }
 
@@ -465,6 +578,41 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(ProgrammNode program) {
+        ClassWriter cw = new ClassWriter(0);
+        cw.visit(V1_1, ACC_PUBLIC, fileName, null, "java/lang/Object", null);
+
+        // Constructor
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
+        // initialization
+        mv.visitInsn(RETURN);
+        mv.visitMaxs(1, 1);
+        mv.visitEnd();
+
+        mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, "main",
+                "([Ljava/lang/String;)V", null, null);
+
+        FunctionWriter fw = new FunctionWriter(program);
+        writers.push(fw);
+        writers.peek().handleFunction();
+        writers.pop();
+
+        mv.visitTypeInsn(NEW, functionClass(fw.getNumber()));
+        mv.visitInsn(DUP);
+        mv.visitMethodInsn(INVOKESPECIAL,
+                functionClass(fw.getNumber()), "<init>", fw.getSignature());
+        mv.visitLdcInsn(0);
+        mv.visitTypeInsn(ANEWARRAY, Class.OBJECT);
+        mv.visitMethodInsn(INVOKEVIRTUAL,
+                functionClass(fw.getNumber()), "call", CALL_SIGNATURE);
+        mv.visitInsn(POP);
+
+        mv.visitInsn(RETURN);
+        mv.visitMaxs(2, 1);
+        mv.visitEnd();
+
+        writeFile(cw, fileName);
         return null;
     }
 
@@ -480,6 +628,17 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(StringNode string) {
+        if (string.getValue().equals("")) {
+            writers.peek().visitFieldInsn(
+                    GETSTATIC, Class.STRING, "EMPTY", Type.STRING);
+        } else {
+            writers.peek().visitTypeInsn(NEW, Class.STRING);
+            writers.peek().visitInsn(DUP);
+            writers.peek().visitLdcInsn(string.getValue());
+            writers.peek().visitMethodInsn(INVOKESPECIAL,
+                    Class.STRING, "<init>", "(Ljava/lang/String;)V");
+            writers.peek().stackPop(2);
+        }
         return null;
     }
 
@@ -490,16 +649,38 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
 
     @Override
     public Object visit(VarNode var) {
+        int number = findScopeNumber(var);
+        FunctionWriter w = writers.peek();
+        w.visitVarInsn(ALOAD, 0);
+        w.visitFieldInsn(GETFIELD,functionClass(w.getNumber()),
+                scopeName(number), scopeType(number));
+        w.visitFieldInsn(GETFIELD, scopeClass(number), var.getName(), Type.OBJECT);
         return null;
     }
 
     @Override
     public Object visit(WhileStatNode whileStat) {
+        Label loopStart = new Label();
+        Label loopEnd = new Label();
+        writers.peek().visitLabel(loopStart);
+        whileStat.getCondition().accept(this);
+        writers.peek().visitMethodInsn(
+                INVOKEVIRTUAL, Class.OBJECT, "toInt", "()I"); // 0(false) or 1(true)
+        writers.peek().stackPop(0);
+        writers.peek().visitJumpInsn(IFEQ, loopEnd); // if x == false
+        whileStat.getStat().accept(this);
+        writers.peek().visitJumpInsn(GOTO, loopStart);
+        writers.peek().visitLabel(loopEnd);
         return null;
     }
 
     @Override
     public Object visit(WithConditionStatNode doWhile) {
+        return null;
+    }
+
+    @Override
+    public Object visit(BaseStatNode doWhile) {
         return null;
     }
 }

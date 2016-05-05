@@ -10,7 +10,7 @@ import java.util.HashSet;
  */
 public class FunctionNode extends ConstantNode{
     private final ArrayList<FunctionParameterNode> parameters;
-    private final ArrayList<BlockStatNode> body;
+    private final ArrayList<BaseStatNode> body;
     private final HashSet<String> variables;
 
     public FunctionNode() {
@@ -28,11 +28,11 @@ public class FunctionNode extends ConstantNode{
         parameters.add(parameter);
     }
 
-    public ArrayList<BlockStatNode> getBody() {
+    public ArrayList<BaseStatNode> getBody() {
         return body;
     }
 
-    public void addStatement(BlockStatNode statement) {
+    public void addStatement(BaseStatNode statement) {
         body.add(statement);
     }
 

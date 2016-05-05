@@ -36,7 +36,7 @@ tokens { INDENT, DEDENT }
       }
 
       // First emit an extra line break that serves as the end of the statement.
-      this.emit(commonToken(Python3Parser.NEWLINE, "\n"));
+      this.emit(commonToken(EasyPythonGrammarParser.NEWLINE, "\n"));
 
       // Now emit as much DEDENT tokens as needed.
       while (!indents.isEmpty()) {
@@ -45,7 +45,7 @@ tokens { INDENT, DEDENT }
       }
 
       // Put the EOF back on the token stream.
-      this.emit(commonToken(Python3Parser.EOF, "<EOF>"));
+      this.emit(commonToken(EasyPythonGrammarParser.EOF, "<EOF>"));
     }
 
     Token next = super.nextToken();
@@ -59,7 +59,7 @@ tokens { INDENT, DEDENT }
   }
 
   private Token createDedent() {
-    CommonToken dedent = commonToken(Python3Parser.DEDENT, "");
+    CommonToken dedent = commonToken(EasyPythonGrammarParser.DEDENT, "");
     dedent.setLine(this.lastToken.getLine());
     return dedent;
   }
@@ -102,7 +102,7 @@ tokens { INDENT, DEDENT }
 }
 
 program
-    : stat*
+    : stat* EOF
     ;
 
 stat
@@ -114,7 +114,7 @@ stat
     ;
 
 blockStat
-    : NEWLINE INDENT stat* DEDENT
+    : NEWLINE INDENT stat+ DEDENT
     ;
 
 ifStat
@@ -145,7 +145,7 @@ expr
     | ID # Var
     | (NUM | STR | BOOL) # Constant
     | OPEN_BRACK functionArgs? CLOSE_BRACK # Array
-    | 'def' OPEN_PAREN functionParams? CLOSE_PAREN blockStat # Function
+    | 'def' ID OPEN_PAREN functionParams? CLOSE_PAREN blockStat # Function
     ;
 
 functionArgs
@@ -187,8 +187,8 @@ CONTINUE : 'continue';
 BREAK : 'break';
 
 NEWLINE
- : ( {atStartOfInput()}?   SPACES
-   | ( '\r'? '\n' | '\r' ) SPACES?
+ : ( {atStartOfInput()}?   WS
+   | ( '\r'? '\n' | '\r' ) [ \t]*
    )
    {
      String newLine = getText().replaceAll("[^\r\n]+", "");
@@ -212,7 +212,7 @@ NEWLINE
        }
        else if (indent > previous) {
          indents.push(indent);
-         emit(commonToken(Python3Parser.INDENT, spaces));
+         emit(commonToken(EasyPythonGrammarParser.INDENT, spaces));
        }
        else {
          // Possibly emit more than 1 DEDENT token.
@@ -250,12 +250,6 @@ GT_EQ : '>=';
 LT_EQ : '<=';
 NOT_EQ : '!=';
 
-
-
-fragment SPACES
- : [ \t]+
- ;
-
 fragment COMMENT
  : '#' ~[\r\n]*
  ;
@@ -268,3 +262,6 @@ BOOL : 'True' | 'False' ;
 fragment DIGIT : [0-9] ;
 fragment ID_LETTER : [a-zA-Z_$] ;
 fragment ESC : '\\' ["\\/bfnrt] ;
+
+WS  :   [ \t]+ -> channel(HIDDEN)
+    ;

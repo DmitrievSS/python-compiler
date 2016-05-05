@@ -11,15 +11,15 @@ import java.util.Stack;
  * Created by ssdmitriev on 29.03.16.
  */
 public class AstBuilder extends EasyPythonGrammarBaseVisitor {
-    private Stack<FunctionNode> scopes;
+    private Stack<FunctionNode> scopes = new Stack<>();
 
     @Override
     public BaseStatNode visitProgram(EasyPythonGrammarParser.ProgramContext ctx) {
-        FunctionNode block = new FunctionNode();
+        ProgrammNode block = new ProgrammNode();
         scopes.push(block);
         block.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
         for (EasyPythonGrammarParser.StatContext stat : ctx.stat()) {
-            block.addStatement((BlockStatNode) visit(stat));
+            block.addStatement((BaseStatNode) visit(stat));
         }
         scopes.pop();
         return block;
@@ -35,7 +35,7 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
         BlockStatNode block = new BlockStatNode();
         block.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
         for (EasyPythonGrammarParser.StatContext stat : ctx.stat()) {
-            block.addStatement((StatStatNode) visit(stat));
+            block.addStatement((BaseStatNode) visit(stat));
         }
         return block;
     }
@@ -45,9 +45,9 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
         IfElseStatNode ifElseNode = new IfElseStatNode();
         ifElseNode.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
         ifElseNode.setCondition((ExpressionStatNode) visit(ctx.expr()));
-        ifElseNode.setIfStat((StatStatNode) visit(ctx.stat(0)));
+        ifElseNode.setIfBranch((BaseStatNode) visit(ctx.stat(0)));
         if (ctx.stat(1) != null) {
-            ifElseNode.setElseStat((StatStatNode) visit(ctx.stat(1)));
+            ifElseNode.setElseBranch((BaseStatNode) visit(ctx.stat(1)));
         }
         return ifElseNode;
     }
@@ -57,7 +57,7 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
         WhileStatNode whileNode = new WhileStatNode();
         whileNode.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
         whileNode.setCondition((ExpressionStatNode) visit(ctx.expr()));
-        whileNode.setStat((StatStatNode) visit(ctx.stat()));
+        whileNode.setStat((BaseStatNode) visit(ctx.stat()));
         whileNode.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
         return whileNode;
     }
@@ -110,16 +110,14 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
         return binary;
     }
 
-
     @Override
-    public BaseStatNode visitVar(EasyPythonGrammarParser.VarContext ctx) {
-        AssignmentNode assign = new AssignmentNode();
-        assign.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
-        VarNode var = new VarNode();
-        var.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
-        var.setName(ctx.ID().getText());
-        return var;
+    public Object visitVar(EasyPythonGrammarParser.VarContext ctx) {
+        VarNode variable = new VarNode();
+        variable.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+        variable.setName(ctx.ID().getText());
+        return variable;
     }
+
 
     @Override
     public Object visitConstant(EasyPythonGrammarParser.ConstantContext ctx) {

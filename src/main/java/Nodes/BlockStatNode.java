@@ -8,17 +8,17 @@ import java.util.ArrayList;
  * Created by ssdmitriev on 29.03.16.
  */
 public class BlockStatNode extends BaseStatNode {
-    private ArrayList<StatStatNode> body;
+    private ArrayList<BaseStatNode> body;
 
     public BlockStatNode() {
         body = new ArrayList<>();
     }
 
-    public ArrayList<StatStatNode> getBody() {
+    public ArrayList<BaseStatNode> getBody() {
         return body;
     }
 
-    public void addStatement(StatStatNode statement) {
+    public void addStatement(BaseStatNode statement) {
         body.add(statement);
     }
 
