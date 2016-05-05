@@ -4,6 +4,9 @@ package runtime;
  * Created by ssdmitriev on 03.05.16.
  */
 public class PythonBoolean extends PythonObject {
+    public static final PythonBoolean TRUE = new PythonBoolean(true);
+    public static final PythonBoolean FALSE = new PythonBoolean(false);
+
     public PythonBoolean(boolean b) {
         super(PythonType.BOOL);
         this.boolValue = b;
@@ -23,66 +26,82 @@ public class PythonBoolean extends PythonObject {
 
     @Override
     public PythonObject neg() {
-        return null;
+        PythonObject number = this.toPythonNumber();
+        return new PythonNumber(-number.getNumberValue());
     }
 
     @Override
     public PythonObject not() {
+        return new PythonBoolean(!this.boolValue);
+    }
+
+    @Override
+    public PythonObject mul(PythonObject x) {
+        PythonNumber number1 = (PythonNumber) this.toPythonNumber();
+        PythonObject number2 = x.toPythonNumber();
+        return number1.mul(number2);
+    }
+
+    @Override
+    public PythonObject mod(PythonObject x) {
+        PythonNumber number1 = (PythonNumber) this.toPythonNumber();
+        PythonObject number2 = x.toPythonNumber();
+        return number1.mod(number2);
+    }
+
+    @Override
+    public PythonObject div(PythonObject x) {
+        PythonNumber number1 = (PythonNumber) this.toPythonNumber();
+        PythonObject number2 = x.toPythonNumber();
+        return number1.div(number2);
+    }
+
+    @Override
+    public PythonObject eq(PythonObject x) {
+        return new PythonBoolean(this.boolValue == x.boolValue);
+    }
+
+    @Override
+    public PythonObject add(PythonObject x) {
         return null;
     }
 
     @Override
-    public PythonObject mul() {
-        return null;
+    public PythonObject or(PythonObject x) {
+        return new PythonBoolean(this.boolValue || x.boolValue);
     }
 
     @Override
-    public PythonObject mod() {
-        return null;
+    public PythonObject notEq(PythonObject x) {
+        return new PythonBoolean(this.boolValue != x.boolValue);
     }
 
     @Override
-    public PythonObject div() {
-        return null;
+    public PythonObject greaterOrEq(PythonObject x) {
+        PythonNumber number1 = (PythonNumber) this.toPythonNumber();
+        PythonObject number2 = x.toPythonNumber();
+        return number1.greaterOrEq(number2);
     }
 
     @Override
-    public PythonObject eq() {
-        return null;
+    public PythonObject greater(PythonObject x) {
+        PythonNumber number1 = (PythonNumber) this.toPythonNumber();
+        PythonObject number2 = x.toPythonNumber();
+        return number1.greater(number2);
     }
 
     @Override
-    public PythonObject add() {
-        return null;
+    public PythonObject lessOrEq(PythonObject x) {
+        PythonNumber number1 = (PythonNumber) this.toPythonNumber();
+        PythonObject number2 = x.toPythonNumber();
+        return number1.lessOrEq(number2);
     }
 
     @Override
-    public PythonObject or() {
-        return null;
+    public PythonObject less(PythonObject x) {
+        PythonNumber number1 = (PythonNumber) this.toPythonNumber();
+        PythonObject number2 = x.toPythonNumber();
+        return number1.less(number2);
     }
 
-    @Override
-    public PythonObject notEq() {
-        return null;
-    }
-
-    @Override
-    public PythonObject greaterOrEq() {
-        return null;
-    }
-
-    @Override
-    public PythonObject greater() {
-        return null;
-    }
-
-    @Override
-    public PythonObject lessOrEq() {
-        return null;
-    }
-
-    @Override
-    public PythonObject less() {
-        return null;
-    }
 }

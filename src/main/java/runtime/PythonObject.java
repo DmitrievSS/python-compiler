@@ -32,18 +32,18 @@ public abstract class PythonObject {
 
     public abstract PythonObject not();
 
-    public abstract PythonObject mul();
+    public abstract PythonObject mul(PythonObject x);
 
-    public abstract PythonObject mod();
-    public abstract PythonObject div();
-    public abstract PythonObject eq();
-    public abstract PythonObject add();
-    public abstract PythonObject or();
-    public abstract PythonObject notEq();
-    public abstract PythonObject greaterOrEq();
-    public abstract PythonObject greater();
-    public abstract PythonObject lessOrEq();
-    public abstract PythonObject less();
+    public abstract PythonObject mod(PythonObject x);
+    public abstract PythonObject div(PythonObject x);
+    public abstract PythonObject eq(PythonObject x);
+    public abstract PythonObject add(PythonObject x);
+    public abstract PythonObject or(PythonObject x);
+    public abstract PythonObject notEq(PythonObject x);
+    public abstract PythonObject greaterOrEq(PythonObject x);
+    public abstract PythonObject greater(PythonObject x);
+    public abstract PythonObject lessOrEq(PythonObject x);
+    public abstract PythonObject less(PythonObject x);
     public PythonObject append(PythonObject object) throws Exception {
         return this;
     }

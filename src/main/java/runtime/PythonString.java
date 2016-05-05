@@ -32,57 +32,59 @@ public class PythonString extends PythonObject{
     }
 
     @Override
-    public PythonObject mul() {
+    public PythonObject mul(PythonObject x) {
         return null;
     }
 
     @Override
-    public PythonObject mod() {
+    public PythonObject mod(PythonObject x) {
         return null;
     }
 
     @Override
-    public PythonObject div() {
+    public PythonObject div(PythonObject x) {
         return null;
     }
 
     @Override
-    public PythonObject eq() {
+    public PythonObject eq(PythonObject x) {
         return null;
     }
 
     @Override
-    public PythonObject add() {
+    public PythonObject add(PythonObject x) {
         return null;
     }
 
     @Override
-    public PythonObject or() {
+    public PythonObject or(PythonObject x) {
         return null;
     }
 
     @Override
-    public PythonObject notEq() {
+    public PythonObject notEq(PythonObject x) {
         return null;
     }
 
     @Override
-    public PythonObject greaterOrEq() {
+    public PythonObject greaterOrEq(PythonObject x) {
         return null;
     }
 
     @Override
-    public PythonObject greater() {
+    public PythonObject greater(PythonObject x) {
         return null;
     }
 
     @Override
-    public PythonObject lessOrEq() {
+    public PythonObject lessOrEq(PythonObject x) {
         return null;
     }
 
     @Override
-    public PythonObject less() {
+    public PythonObject less(PythonObject x) {
         return null;
     }
+
+
 }
