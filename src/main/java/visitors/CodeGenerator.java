@@ -275,9 +275,9 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
                 mv.visitFieldInsn(GETSTATIC, Class.STANDARD_LIBRARY, "CONSOLE", Type.LIST);
                 mv.visitFieldInsn(PUTFIELD, scopeClass(number), CONSOLE_LIBRARY, Type.OBJECT);
 
-                mv.visitVarInsn(ALOAD, 0);
-                mv.visitFieldInsn(GETSTATIC, Class.STANDARD_LIBRARY, "MATH", Type.LIST);
-                mv.visitFieldInsn(PUTFIELD, scopeClass(number), MATH_LIBRARY, Type.OBJECT);
+//                mv.visitVarInsn(ALOAD, 0);
+//                mv.visitFieldInsn(GETSTATIC, Class.STANDARD_LIBRARY, "MATH", Type.LIST);
+//                mv.visitFieldInsn(PUTFIELD, scopeClass(number), MATH_LIBRARY, Type.OBJECT);
             }
 
             mv.visitInsn(RETURN);
