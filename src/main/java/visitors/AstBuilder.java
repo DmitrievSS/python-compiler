@@ -202,6 +202,7 @@ public class AstBuilder extends EasyPythonGrammarBaseVisitor {
     @Override
     public Object visitFunction(EasyPythonGrammarParser.FunctionContext ctx) {
         FunctionNode function = new FunctionNode();
+        scopes.peek().addVariable("_" + ctx.ID().toString());
         scopes.push(function);
         function.setPosition(ctx.start.getLine(), ctx.start.getCharPositionInLine());
         function.setValue(ctx.getText());

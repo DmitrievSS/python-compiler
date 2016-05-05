@@ -461,6 +461,7 @@ public class CodeGenerator implements AstVisitor<Object>, Opcodes {
         w.visitMethodInsn(INVOKESPECIAL,
                 functionClass(fw.getNumber()), "<init>", fw.getSignature());
         writers.peek().stackPop(writers.size() + 1);
+
         return null;
     }
 

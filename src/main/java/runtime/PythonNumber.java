@@ -72,8 +72,8 @@ public class PythonNumber extends PythonObject {
 
     @Override
     public PythonObject add(PythonObject x) {
-
-        return null;
+        PythonNumber number = (PythonNumber) x.toPythonNumber();
+        return new PythonNumber(this.numberValue + number.getNumberValue());
     }
 
     @Override
